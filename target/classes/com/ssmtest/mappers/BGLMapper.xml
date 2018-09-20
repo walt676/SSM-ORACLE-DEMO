@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ssmtest.dao.BGLDao">
+    <!-- 先定义一个Interface，UserMapper，然后Mapper文件的namespace指向的就是这个Interface， UserInterface里定义的方法和UserMapper.xml文件中的一样,
+        然后代码里直接使用接口 -->
+    <resultMap id="BaseResultMap" type="com.ssmtest.entity.BankGeneralLedger">
+        <id column="bgl_id" property="bgl_id" jdbcType="INTEGER" />
+        <result column="bankId" property="bankId" jdbcType="INTEGER" />
+        <result column="checkDate" property="checkDate" jdbcType="VARCHAR" />
+        <result column="bank_count" property="bank_count" jdbcType="INTEGER" />
+        <result column="bank_amount" property="bank_amount" jdbcType="DOUBLE" />
+        <result column="enterprise_count" property="enterprise_count" jdbcType="INTEGER" />
+        <result column="enterprise_amount" property="enterprise_amount" jdbcType="DOUBLE" />
+        <result column="is_success" property="is_success" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        "bgl_id", "bankId", TO_CHAR("checkDate",'yyyy/mm/dd hh24:mi:ss') "checkDate",
+        "bank_count", "bank_amount", "enterprise_count", "enterprise_amount",
+        "is_success"
+    </sql>
+
+    <!-- 根据分页数据start 和size查询数据 -->
+    <select id="findByPage" parameterType="Map" resultMap="BaseResultMap">
+        select *
+        FROM
+        (SELECT
+        <include refid="Base_Column_List"/>,ROWNUM AS RN
+        from
+        <if test="start!=null and size!=null">
+            (
+            SELECT a.*,ROWNUM AS RN FROM "bank_general_ledger" a
+            ORDER BY "bgl_id"
+            )b
+            )d
+            where d.RN BETWEEN #{start} AND #{end}
+        </if>
+    </select>
+
+
+    <!--得到记录总数-->
+    <select id="getBglSize" resultType="int">
+        SELECT count(*) FROM "bank_general_ledger"
+    </select>
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ssmtest.dao.StoredProcedureDao">
+    <!-- 先定义一个Interface，UserMapper，然后Mapper文件的namespace指向的就是这个Interface， UserInterface里定义的方法和UserMapper.xml文件中的一样,
+        然后代码里直接使用接口 -->
+
+    <!--存储过程1查询-->
+    <select id="procedureFir" statementType="CALLABLE" parameterType="java.util.Map" resultType="java.util.Map">
+        { call PROCEDURE1(#{CID,mode=IN,jdbcType=INTEGER},#{TO_IDEA,mode=OUT,jdbcType=VARCHAR})
+    </select>
+
+    <!--存储过程2缴费-->
+    <select id="procedureSec" statementType="CALLABLE" parameterType="java.util.Map" resultType="java.util.Map">
+        { call 存储过程2缴费(#{SPID,mode=IN,jdbcType=INTEGER},#{payMoney,mode=IN,jdbcType=INTEGER}
+        ,#{bankId,mode=IN,jdbcType=INTEGER},#{TO_IDEA,mode=OUT,jdbcType=VARCHAR})
+    </select>
+
+    <!--存储过程3冲正-->
+    <select id="procedureThird" statementType="CALLABLE" parameterType="java.util.Map" resultType="java.util.Map">
+        { call PROCEDURE3(#{SPID,mode=IN,jdbcType=INTEGER},#{TO_IDEA,mode=OUT,jdbcType=VARCHAR}) }
+    </select>
+
+    <!--存储过程4&5对总账、对细账-->
+    <select id="procedureFourth" statementType="CALLABLE" parameterType="java.util.Map" resultType="java.util.Map">
+        { call PROCEDURE4(#{bankId,mode=IN,jdbcType=INTEGER},#{total_deal_num,mode=IN,jdbcType=INTEGER},
+        #{total_deal_fee,mode=IN,jdbcType=DOUBLE},#{ledger_date,mode=IN,jdbcType=VARCHAR},
+        #{TO_IDEA,mode=OUT,jdbcType=VARCHAR}) }
+    </select>
+
+</mapper>

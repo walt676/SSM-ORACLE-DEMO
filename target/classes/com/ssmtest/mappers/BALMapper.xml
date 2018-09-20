@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ssmtest.dao.BALDao">
+    <!-- 先定义一个Interface，UserMapper，然后Mapper文件的namespace指向的就是这个Interface， UserInterface里定义的方法和UserMapper.xml文件中的一样,
+        然后代码里直接使用接口 -->
+    <resultMap id="BaseResultMap" type="com.ssmtest.entity.BankAbnormalLedger">
+        <id column="bal_id" property="bal_id" jdbcType="INTEGER" />
+        <result column="bankId" property="bankId" jdbcType="INTEGER" />
+        <result column="bt_id" property="bt_id" jdbcType="INTEGER" />
+        <result column="ledger_date" property="ledger_date" jdbcType="VARCHAR" />
+        <result column="bank_amount" property="bank_amount" jdbcType="DOUBLE" />
+        <result column="enterprise_amount" property="enterprise_amount" jdbcType="DOUBLE" />
+        <result column="error_reason" property="error_reason" jdbcType="VARCHAR" />
+        <result column="customerId" property="customerId" jdbcType="INTEGER" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        "bal_id", "bankId", "bt_id", TO_CHAR("ledger_date",'yyyy/mm/dd hh24:mi:ss') "ledger_date",
+         "bank_amount", "enterprise_amount", "error_reason", "customerId"
+    </sql>
+
+    <!-- 根据分页数据start 和size查询数据 -->
+    <select id="findByPage" parameterType="Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from
+        <if test="start!=null and size!=null">
+            (
+            SELECT a.*,ROWNUM AS RN FROM "bank_abnormal_ledger" a
+            ORDER BY "bal_id"
+            )b
+            where b.RN BETWEEN #{start} AND #{end}
+        </if>
+    </select>
+
+
+    <!--得到记录总数-->
+    <select id="getBalSize" resultType="int">
+        SELECT count(*) FROM "bank_abnormal_ledger"
+    </select>
+
+</mapper>

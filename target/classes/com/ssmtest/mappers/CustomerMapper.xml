@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ssmtest.dao.CustomerDao">
+    <!-- 先定义一个Interface，UserMapper，然后Mapper文件的namespace指向的就是这个Interface， UserInterface里定义的方法和UserMapper.xml文件中的一样,
+        然后代码里直接使用接口 -->
+    <resultMap id="BaseResultMap" type="com.ssmtest.entity.Customer">
+        <id column="customerId" property="id" jdbcType="INTEGER" />
+        <result column="customerName" property="customerName" jdbcType="VARCHAR" />
+        <result column="tel" property="tel" jdbcType="VARCHAR" />
+        <result column="address" property="address" jdbcType="VARCHAR" />
+        <result column="balance" property="balance" jdbcType="FLOAT" />
+        <collection property="devices" ofType="Device" select="getDevices" column="customerId">
+        </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        "customerId", "customerName", "tel", "address", "balance"
+    </sql>
+
+
+    <select id="selectCustomerByPrimaryKey" resultMap="BaseResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List" />
+        from "customer"
+        where "customerId" = #{id,jdbcType=INTEGER}
+    </select>
+
+
+
+    <!-- 根据分页数据start 和size查询数据 -->
+    <select id="findByPage" parameterType="Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from
+        <if test="start!=null and size!=null">
+            (
+            SELECT a.*,ROWNUM AS RN FROM "customer" a
+            ORDER BY "customerId"
+            )b
+            where b.RN BETWEEN #{start} AND #{end}
+        </if>
+    </select>
+
+    <!--查询所有用户数据 -->
+    <select id="selectCustomerList" resultType="com.ssmtest.entity.Customer">
+        select
+        <include refid="Base_Column_List" />
+        from "customer"
+    </select>
+
+    <!--得到所有设备-->
+    <select id="getDevices" parameterType="int" resultType="com.ssmtest.entity.Device">
+      SELECT
+        d."deviceId",d."customerId",d."device_type"
+      FROM "device" d
+      WHERE "customerId" = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!--得到当前用户需缴费表-->
+    <select id="getShouldPayById" parameterType="int" resultType="com.ssmtest.entity.ShouldPay">
+        SELECT "spId",d."deviceId",TO_CHAR("spDate",'yyyy/mm/dd hh24:mi:ss')"spDate","total_fee"
+        FROM "should_pay" s,"device" d,"customer"c
+        WHERE s."deviceId" = d."deviceId" AND d."customerId" = c."customerId" AND s."payState"='0'
+        AND c."customerId" = #{id,jdbcType=INTEGER}
+    </select>
+    <!--&lt;!&ndash;得到某年某月的月账单&ndash;&gt;-->
+    <!--<select id="getMouthMeterReaders" resultType="com.ssmtest.entity.MeterReader">-->
+        <!--SELECT-->
+        <!--m."customerId",m."deviceId",m."recordDate",m."money"-->
+        <!--FROM "meter_record" m-->
+        <!--WHERE "deviceId" = #{id,jdbcType=INTEGER}  AND TO_CHAR("recordDate",'YYYY/MM') = #{mouth,jdbcType=VARCHAR}-->
+    <!--</select>-->
+
+    <!-- 查询用户记录总数 -->
+    <select id="selectCustomerCount" resultType="int">
+        select count(*) from "customer"
+    </select>
+
+    <!--根据主键删除一条用户数据 -->
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from "customer"
+        where "customerId" = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!--插入一条完整用户数据 -->
+    <insert id="insert" parameterType="com.ssmtest.entity.Customer">
+        insert into "customer" ("customerId", "customerName", "tel",
+        "address"
+        )
+        values (#{id,jdbcType=INTEGER}, #{customerName,jdbcType=VARCHAR},
+        #{tel,jdbcType=VARCHAR},
+        #{address,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!--插入一条用户数据 ，可以不完整 -->
+    <insert id="insertSelective" parameterType="com.ssmtest.entity.Customer">
+        insert into "customer"
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                "customerId",
+            </if>
+            <if test="customerName != null">
+                "customerName",
+            </if>
+            <if test="tel != null">
+                "tel",
+            </if>
+            <if test="address != null">
+                "address",
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="customerName != null">
+                #{customerName,jdbcType=VARCHAR},
+            </if>
+            <if test="tel != null">
+                #{tel,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                #{address,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <!--根据主键更新一条用户数据，可以不完整 -->
+    <update id="updateByPrimaryKeySelective" parameterType="com.ssmtest.entity.Customer">
+        update "customer"
+        <set>
+            <if test="customerName != null">
+                "customerName" = #{customerName,jdbcType=VARCHAR},
+            </if>
+            <if test="tel != null">
+                "tel" = #{tel,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                "address" = #{address,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where "customerId" = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!--根据主键更新一条用户数据 -->
+    <update id="updateByPrimaryKey" parameterType="com.ssmtest.entity.User">
+        update "customer"
+        set "customerName" = #{customerName,jdbcType=VARCHAR},
+        "tel" = #{tel,jdbcType=VARCHAR},
+        "address" = #{address,jdbcType=VARCHAR},
+        where "customerId" = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
